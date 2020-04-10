@@ -87,7 +87,7 @@ while 1:
                                     _ = f.write(str(x) + ', ')
                             os.remove(file_name)
                     else:
-                         _ = dp_f.write(pass_name + '_' + str(input_res['channel']) + ': ' + input_res['filepath'].split('/')[-1].split('.')[-2])
+                         _ = dp_f.write(pass_name + '_' + str(input_res['channel']) + ': ' + input_res['filepath'].split('/')[-1].split('.')[-2] + '\n')
 
         print('')       
         continue 
