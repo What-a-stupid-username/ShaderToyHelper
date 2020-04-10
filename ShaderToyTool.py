@@ -19,8 +19,8 @@ def DownLoad(url, path):
                 urllib.request.urlretrieve(url, path)                                             
                 return True
             except socket.timeout:
-                print('Download Time out, retry ' + str(count))
                 count += 1
+                print('Download Time out, retry ' + str(count))
     return False
 
 while 1:
