@@ -11,14 +11,14 @@ def DownLoad(url, path):
     try:
         urllib.request.urlretrieve(url, path)
         return True
-    except socket.timeout:
+    except:
         count = 1
         print('Download Time out, retry ' + str(count))
         while count <= 2:
             try:
                 urllib.request.urlretrieve(url, path)                                             
                 return True
-            except socket.timeout:
+            except:
                 count += 1
                 print('Download Time out, retry ' + str(count))
     return False
@@ -54,44 +54,49 @@ while 1:
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
         dct = dct['renderpass']
-        for render_pass in dct:
-            pass_name = render_pass['name']
-            inputs = render_pass['inputs']
-            print("Pass name: " + pass_name)
-            for input_res in inputs:
-                if input_res['type'] != 'buffer':
-                    res_url = 'https://www.shadertoy.com' + input_res['filepath']
-                    channel = input_res['channel']
-                    print('   Channel ' + str(channel) + ": " + res_url)
-                    type_name = res_url.split('.')[-1]
-                    file_name = save_dir + '\\' + pass_name + '_' + str(channel) + '.' + type_name
-                    if not DownLoad(res_url, file_name):
-                        print("Download faild, skip it.")
-                        os.remove(file_name)
-                        with open(file_name + '.url.txt', "w") as f:
-                            _ = f.write(res_url);
-                    if (input_res['type'] == 'volume'):
-                        bin_file = open(file_name,'rb')
-                        w = int.from_bytes(bin_file[4:8], byteorder='little', signed=False)
-                        h = int.from_bytes(bin_file[8:12], byteorder='little', signed=False)
-                        d = int.from_bytes(bin_file[12:16], byteorder='little', signed=False)
-                        channel_count = int.from_bytes(bin_file[16:20], byteorder='little', signed=False)
-                        with open(file_name + 'volume.txt', "w") as f:
-                            _ = f.write('Width:' + str(w) + ', Height:' + str(h) + ', Depth:' + str(d) + ', Channel:' + str(channel_count) + '\n')
-                            _ = f.write('Ordered first by Channel, then u dimension, then v dimension, then depth slice.\n')
-                            for x in bin_file[20:]:
-                                _ = f.write(str(x) + ', ')
-                        os.remove(file_name)
-        print('')        
+        with open(save_dir + '\\' + 'pass_dependency.txt', "w") as dp_f:
+            for render_pass in dct:
+                pass_name = render_pass['name']
+                inputs = render_pass['inputs']
+                print("Pass name: " + pass_name)
+                code = render_pass['code']
+                with open(save_dir + '\\' + pass_name + '.code.txt', "w") as f:
+                    _ = f.write(code)
+                for input_res in inputs:
+                    if input_res['type'] != 'buffer':
+                        res_url = 'https://www.shadertoy.com' + input_res['filepath']
+                        channel = input_res['channel']
+                        print('   Channel ' + str(channel) + ": " + res_url)
+                        type_name = res_url.split('.')[-1]
+                        file_name = save_dir + '\\' + pass_name + '_' + str(channel) + '.' + type_name
+                        if not DownLoad(res_url, file_name):
+                            print("Download faild, skip it.")
+                            os.remove(file_name)
+                            with open(file_name + '.url.txt', "w") as f:
+                                _ = f.write(res_url);
+                        if (input_res['type'] == 'volume'):
+                            bin_file = open(file_name,'rb').read()
+                            w = int.from_bytes(bin_file[4:8], byteorder='little', signed=False)
+                            h = int.from_bytes(bin_file[8:12], byteorder='little', signed=False)
+                            d = int.from_bytes(bin_file[12:16], byteorder='little', signed=False)
+                            channel_count = int.from_bytes(bin_file[16:20], byteorder='little', signed=False)
+                            with open(file_name + 'volume.txt', "w") as f:
+                                _ = f.write('Width:' + str(w) + ', Height:' + str(h) + ', Depth:' + str(d) + ', Channel:' + str(channel_count) + '\n')
+                                _ = f.write('Ordered first by Channel, then u dimension, then v dimension, then depth slice.\n')
+                                for x in bin_file[20:]:
+                                    _ = f.write(str(x) + ', ')
+                            os.remove(file_name)
+                    else:
+                         _ = dp_f.write(pass_name + '_' + str(input_res['channel']) + ': ' + input_res['filepath'].split('/')[-1].split('.')[-2])
+
+        print('')       
+        continue 
     except requests.exceptions.ConnectionError:
         print('\nConnection Error\n')
-        continue;
     except requests.exceptions.ChunkedEncodingError:
         print('\nChunked Encoding Error\n')
-        continue;
     except requests.exceptions.Timeout:
         print('\nTime Out Error\n')
-        continue;
+    # finally:
     except:
         print('\nUnknown Error\n')
-        continue;
