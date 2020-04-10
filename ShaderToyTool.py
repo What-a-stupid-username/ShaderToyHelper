@@ -68,7 +68,7 @@ while 1:
                         channel = input_res['channel']
                         print('   Channel ' + str(channel) + ": " + res_url)
                         type_name = res_url.split('.')[-1]
-                        file_name = save_dir + '\\' + pass_name + '_' + str(channel) + '.' + type_name
+                        file_name = save_dir + '\\' + pass_name + '.' + str(channel) + '.' + type_name
                         if not DownLoad(res_url, file_name):
                             print("Download faild, skip it.")
                             os.remove(file_name)
@@ -80,14 +80,14 @@ while 1:
                             h = int.from_bytes(bin_file[8:12], byteorder='little', signed=False)
                             d = int.from_bytes(bin_file[12:16], byteorder='little', signed=False)
                             channel_count = int.from_bytes(bin_file[16:20], byteorder='little', signed=False)
-                            with open(file_name + 'volume.txt', "w") as f:
+                            with open(file_name + '.volume.txt', "w") as f:
                                 _ = f.write('Width:' + str(w) + ', Height:' + str(h) + ', Depth:' + str(d) + ', Channel:' + str(channel_count) + '\n')
                                 _ = f.write('Ordered first by Channel, then u dimension, then v dimension, then depth slice.\n')
                                 for x in bin_file[20:]:
                                     _ = f.write(str(x) + ', ')
                             os.remove(file_name)
                     else:
-                         _ = dp_f.write(pass_name + '_' + str(input_res['channel']) + ': ' + input_res['filepath'].split('/')[-1].split('.')[-2] + '\n')
+                         _ = dp_f.write(pass_name + '.' + str(input_res['channel']) + ': ' + input_res['filepath'].split('/')[-1].split('.')[-2].replace('buffer00', 'Buf A').replace('buffer01', 'Buf B').replace('buffer02', 'Buf C') + '\n')
 
         print('')       
         continue 
